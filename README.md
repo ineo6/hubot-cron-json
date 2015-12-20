@@ -15,7 +15,10 @@ All you need to do is just creating `./conf/cron-tasks.json`:
     },
     {
         "time": "0 45 17 * * 5 ",
-        "event": "sample:task"
+        "event": "sample:task",
+        "params":{
+            "test1":"test"
+        }
     }
 ]
 ```

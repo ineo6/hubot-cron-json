@@ -3,32 +3,32 @@
 #
 # Commnads:
 #   hubot cron list - List all cron msg/events
-# 
+#
 # Author
 #   tcnksm <https://github.com/tcnksm>
-#  
+#
 
 Cron = require('cron').CronJob
-Fs   = require 'fs'
+Fs = require 'fs'
 Path = require 'path'
 
 module.exports = (robot) ->
 
-  # Hipchat room for send
+# Hipchat room for send
   user = {room: process.env.HUBOT_HIPCHAT_ROOMS}
-  
+
   # Read cron setting from cron-msg.json
   cronTask = new CronTask(robot, user)
   cronTask.setAll()
-  
+
   # Say all cron tasks
   robot.respond /cron (list|ls)/i, (msg) ->
     cronTask.list()
 
-                
+
 class CronTask
 
-  constructor: (@robot,@user) ->
+  constructor: (@robot, @user) ->
 
   read: (cb) ->
     configFilePath = Path.resolve ".", "conf", "cron-tasks.json"
@@ -44,10 +44,10 @@ class CronTask
 
   list: ->
     @read (tasks) =>
-      for t in tasks      
+      for t in tasks
         if t['msg']?
           @robot.send @user, 'Tell ' + t['msg'] + ' at ' + t['time']
-        
+
         if t['event']?
           @robot.send @user, 'Emit ' + t['event'] + ' at ' + t['time']
 
@@ -55,10 +55,10 @@ class CronTask
     @read (tasks) =>
       for t in tasks
         if t['msg']?
-          @setMsg(t['time'],t['msg'])
-        
+          @setMsg(t['time'], t['msg'])
+
         if t['event']?
-          @setEvent(t['time'], t['event'])
+          @setEvent(t['time'], t['event'], t['params'])
 
   setMsg: (time, msg) ->
     new Cron(time, () =>
@@ -66,10 +66,10 @@ class CronTask
     ).start()
     console.log('Set cron msg, ' + msg + ' at ' + time)
 
-  setEvent: (time, event) ->
+  setEvent: (time, event, params) ->
     new Cron(time, () =>
-      @robot.emit event
-    ).start()              
+      @robot.emit event, params
+    ).start()
     console.log('Set cron event, ' + event + ' at ' + time)
 
-  
+
