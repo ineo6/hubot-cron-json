@@ -12,6 +12,8 @@ Cron = require('cron').CronJob
 Fs = require 'fs'
 Path = require 'path'
 
+localTimeZone = process.env.HUBOT_LOCAL_TIME_ZONE or 'Asia/Shanghai'
+
 module.exports = (robot) ->
 
 # Hipchat room for send
@@ -61,15 +63,27 @@ class CronTask
           @setEvent(t['time'], t['event'], t['params'])
 
   setMsg: (time, msg) ->
-    new Cron(time, () =>
-      @robot.send @user, msg
-    ).start()
+    new Cron(
+      {
+        cronTime: time,
+        onTick: () =>
+          @robot.send @user, msg
+        start: true,
+        timeZone: localTimeZone
+      })
+
+
     console.log('Set cron msg, ' + msg + ' at ' + time)
 
   setEvent: (time, event, params) ->
-    new Cron(time, () =>
-      @robot.emit event, params
-    ).start()
+    new Cron({
+      cronTime: time
+      onTick: () =>
+        @robot.emit event, params
+      start: true,
+      timeZone: localTimeZone
+    })
+
     console.log('Set cron event, ' + event + ' at ' + time)
 
 
